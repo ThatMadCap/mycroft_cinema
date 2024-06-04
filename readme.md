@@ -1,3 +1,9 @@
+### Note
+
+I'm providing this as is - No support given. A simple update to mycroft_cinema just to make it actually work on my server.
+
+Original readme follows.
+
 <h1 align='center'>[STANDALONE] OnlineM Cinemas</a></h1><p align='center'><b>GTA:Online Cinema Remastered</b></h5>
 
 Wanna Watch some movies with your friends, but worried about **copyrighted** videos? No worrys! With this script, you can head on over to **any Cinema** across Los-Santos and watch the watch any of the **built in GTA Movies** and enjoy a fully **synchronised** experience with your friends !
