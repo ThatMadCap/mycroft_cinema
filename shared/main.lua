@@ -1,7 +1,8 @@
+local QBCore = exports['qb-core']:GetCoreObject()
+
 Config = {}
 
-Config.Bank = false -- Change to true for cash
-
+Config.Bank = false
 
 Config.Cinemas = {
     ["vinewood"] = {
@@ -34,10 +35,6 @@ Config.Cinemas = {
             {
                 name = "PL_WEB_RS",
                 time = 16
-            },
-            {
-                name = "PL_WEB_PRB2",
-                time = 18
             },
             {
                 name = "PL_LES1_FAME_OR_SHAME",
@@ -80,10 +77,6 @@ Config.Cinemas = {
                 time = 18
             },
             {
-                name = "PL_CINEMA_ARTHOUSE",
-                time = 20
-            },
-            {
                 name = "PL_WEB_KFLF",
                 time = 22
             },
@@ -112,16 +105,8 @@ Config.Cinemas = {
                 time = 12
             },
             {
-                name = "PL_CINEMA_CARTOON",
-                time = 14
-            },
-            {
                 name = "PL_LES1_FAME_OR_SHAME",
                 time = 18
-            },
-            {
-                name = "PL_CINEMA_ARTHOUSE",
-                time = 20
             },
         },
         CloseTime = 21,
@@ -141,7 +126,7 @@ Config.Framework = {
             --obj = exports["es_extended"]:getSharedObject()
 
             -- QBCore
-            --obj = exports["qb-core"]:GetCoreObject()
+            obj = exports["qb-core"]:GetCoreObject()
             
             return obj
         end,
@@ -154,7 +139,7 @@ Config.Framework = {
             -- lib.showTextUI(text)
 
             -- QBCore
-            -- exports['qb-core']:DrawText('This is a test', 'left')
+            exports['qb-core']:DrawText(text, 'left')
         end,
         HideTextUI = function(Obj)
             -- Use this if you want to use TextUI (requires UseTextUI to be true)
@@ -165,7 +150,7 @@ Config.Framework = {
             -- lib.hideTextUI()
 
             -- QBCore
-            --exports['qb-core']:HideText()
+            exports['qb-core']:HideText()
         end,
         BuyTicketCallback = function (Object, cinema)
             --[[ ESX
@@ -178,39 +163,48 @@ Config.Framework = {
             end, cinema)
             ]]
 
-            --[[QBCore
+            --QBCore
             Object.Functions.TriggerCallback("cinema:buyTicket", function(bought)
+                --print("ticket bought" .. tostring(bought))
+                bought = true
                 if bought then
-                    EnterCinema(k) -- Enter the Cinema
+                    --print(bought)
+                    EnterCinema(cinema) -- Enter the Cinema
                 else 
                     Config.Framework.Client.showNotification("You Cannot Afford this!","error") -- tell them they cannot
                 end
             end, k)
-            ]]
+           
         end,
         showNotification = function(object, text, type)
             --[[ ESX
             object.ShowNotification(text, type)
             ]]
 
-            --[[ QBCore
-             object.Functions.Notify(text, type)
-            ]]
+            --QBCore
+            object.Functions.Notify(text, type)
+           
 
-            --[[ Standalone
-             BeginTextCommandThefeedPost('STRING')
+            --Standalone
+             --[[ BeginTextCommandThefeedPost('STRING')
              AddTextComponentSubstringPlayerName(text)
-             EndTextCommandThefeedPostTicker(false , true)
-            ]]
+             EndTextCommandThefeedPostTicker(false , true) ]]
+           
         end,
         RegisterInput = function(object, command_name, label, input_group, key, on_press)
             -- ESX
             -- object.RegisterInput(command_name, label, input_group, key, on_press)
 
-            --[[ Other 
+            --Other 
                 RegisterCommand(command_name, on_press)
                 RegisterKeyMapping(command_name, label, input_group, key)
-            -- ]]
+
+
+                --[[ QBCore.Commands.AddressedKeybinds[key] = {
+                    Description = label,  -- Description displayed in the menu
+                    Function = function(source)
+                      TriggerServerEvent(command_name)  -- Triggers the server-side event
+                    end} ]]
         end
     },
     Server = {
@@ -223,7 +217,7 @@ Config.Framework = {
             --obj = exports["es_extended"]:getSharedObject()
 
             -- QBCore
-            --obj = exports["qb-core"]:GetCoreObject()
+            obj = exports["qb-core"]:GetCoreObject()
             
             return obj
         end,
@@ -252,29 +246,46 @@ Config.Framework = {
             end)
             ]] 
 
-            --[[ QBCore
+            --QBCore
             Object.Functions.CreateCallback("cinema:buyTicket", function(src, cb, cinema)
-                local xPlayer = Object.Functions.GetPlayer(src)
+                --local xPlayer = QBCore.Functions.GetPlayer(src)
                 local cin = Config.Cinemas[cinema]
-                if Config.Bank then
-                  if xPlayer.PlayerData.money.bank >= cin.price then
-                    xPlayer.Functions.RemoveMoney("bank", cin.price, "Cinema Ticket")
-                    SetPlayerRoutingBucket(src, cin.bucket)
-                    cb(true)
-                  else 
+            
+                if not cin then
+                    --print("Error: Cinema data not found for cinema:", cinema)
                     cb(false)
-                  end
-                else
-                    if xPlayer.PlayerData.money.cash >= cin.price then
-                        xPlayer.Functions.RemoveMoney("cash", cin.price, "Cinema Ticket")
-                        SetPlayerRoutingBucket(src, cin.bucket)
+                    return
+                end
+            
+                if type(cin.price) ~= "number" then
+                    --print("Error: Invalid price data for cinema:", cinema)
+                    cb(false)
+                    return
+                end
+            
+                SetPlayerRoutingBucket(src, cin.bucket)
+
+                -- MADCAP: NONE OF THIS FUCKING CODE WORKS FOR BUYING A TICKET
+                -- SO WHATEVER, THE CINEMA IS FREE IN LOS SANTOS
+
+                --if Config.Bank then
+                    --[[ if xPlayer.PlayerData.money.bank >= cin.price then
+                        xPlayer.Functions.RemoveMoney("bank", cin.price, "Cinema Ticket")
                         cb(true)
                     else 
                         cb(false)
-                    end
-                end
+                    end ]]
+                --else
+                    --SetPlayerRoutingBucket(src, cin.bucket)
+                    --[[ if xPlayer.PlayerData.money.cash >= cin.price then
+                        xPlayer.Functions.RemoveMoney("cash", cin.price, "Cinema Ticket")
+                        cb(true)
+                    else 
+                        cb(false)
+                    end ]]
+                --end
             end)
-            ]] 
-        end
+        end            
+
     }
 }

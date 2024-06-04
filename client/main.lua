@@ -138,14 +138,14 @@ function CreateTV()
             end
             -- Has Cinema Closed
             if currTime > Cinema.showings[#Cinema.showings].time and currTime >= Cinema.CloseTime then
-                Config.Framework.Client.showNotification(Object, "Cinema Is Now Closed!", "error")
+                Config.Framework.Client.showNotification(Object, "Cinema is now closed!", "error")
                 Wait(2000)
                 ExecuteCommand("cinema:leave")
             end
             -- Has Current Show Finished
             local showa = GetCurrentShowing(Cinema.showings)
             if showa.name ~= show.name then
-                Config.Framework.Client.showNotification(Object, "Movie Has Ended!", "info")
+                Config.Framework.Client.showNotification(Object, "The movie has ended", "info")
                 Wait(2000)
                 ExecuteCommand("cinema:leave")
             end
@@ -194,14 +194,19 @@ Config.Framework.Client.RegisterInput(Object, "cinema:leave", "[Cinema] Leave", 
     SetPlayerControl(PlayerId(), true)
 end)
 
--- Register Leave Key as Backspace
+-- Register Enter Key as E
 Config.Framework.Client.RegisterInput(Object, "cinema:enter", "[Cinema] Enter", "keyboard", "e", function()
+    --print("Pressed E")
+    --print(InCinema)
+    --print(NearCinema)
     if InCinema then return end
     if not NearCinema then return end
     Interact(NearCinema)
+    --print ("did interact")
 end)
 
 function EnterCinema(cinema)
+    --print("entering cinema")
     local PlayerPed = PlayerPedId()
     local InteriorCoords = vector3(-1427.299, -245.1012, 16.8039) -- coords of the interior
     InCinema = cinema -- store the cinema used to enter, globally
@@ -225,22 +230,28 @@ function Interact(k)
     local currTime = GetClockHours() -- gets in game hours
     -- Check if the cinema is open
     if currTime < v.showings[1].time or currTime > v.CloseTime then
-        Config.Framework.Client.showNotification(Object, "This Cinema is currently Closed!", "error")
+        --print("doing notification")
+        Config.Framework.Client.showNotification(Object, "This cinema is currently closed!", "error")
         return
     end
 
     if currTime > v.showings[#v.showings].time and currTime >= v.CloseTime then
-        Config.Framework.Client.showNotification(Object, "This Cinema is currently Closed!", "error")
+       -- print("doing notification")
+        Config.Framework.Client.showNotification(Object, "This cinema is currently closed!", "error")
         return
     end
     Config.Framework.Client.BuyTicketCallback(Object, k)
+    --print("doing Config.Framework.Client.BuyTicketCallback " .. k)
 end
 CreateThread(function()
     local ped = PlayerPedId()
     while not DoesEntityExist(ped) do 
         Wait(0)
     end
-        for k,v in pairs(Config.Cinemas) do
+
+    -- no blips for Yume because too many facking blips already
+
+        --[[ for k,v in pairs(Config.Cinemas) do
             -- Create Blips 
             local settings = {
                 sprite = 135,
@@ -271,7 +282,7 @@ CreateThread(function()
             BeginTextCommandSetBlipName('STRING')
             AddTextComponentSubstringPlayerName(settings.text)
             EndTextCommandSetBlipName(blip)
-        end
+        end ]]
 
         -- Create Markers
         local Drawing = false
@@ -285,7 +296,7 @@ CreateThread(function()
                     NearCinema = k
                     if not Drawing then
                         Drawing = true
-                       Config.Framework.Client.ShowTextUI(Object, "[E] Watch A Movie - $".. v.price ..".")
+                       Config.Framework.Client.ShowTextUI(Object, "[E] Enter the Cinema")
                     end
                 end
             end
